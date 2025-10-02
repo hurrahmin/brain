@@ -492,7 +492,8 @@
                         </div>
 
                         <button class="mic-button" id="micButton" onclick="startListening()">🎤</button>
-                        <p style="color: #666; margin-top: 10px;">마이크 버튼을 눌러 단어를 발음하세요</p>
+                        <p style="color: #666; margin-top: 10px;" id="micInstruction">마이크 버튼을 눌러 단어를 발음하세요</p>
+                        <p style="color: #ff6b6b; font-weight: bold; margin-top: 5px;" id="attemptCounter" class="hide">시도: <span id="attemptNum">0</span>/3</p>
 
                         <div id="transcriptDisplay" class="transcript-display hide">
                             인식된 발음: <span id="transcript"></span>
@@ -501,6 +502,7 @@
                         <div id="feedback" class="feedback hide"></div>
 
                         <div class="controls">
+                            <button id="retryButton" onclick="retryWord()" style="display: none;">🔄 다시 시도</button>
                             <button id="nextButton" onclick="goToNextWord()" style="display: none;">➡️ 다음 단어</button>
                             <button id="skipButton" onclick="skipWord()">⏭️ 건너뛰기</button>
                             <button onclick="stopTest()">🛑 테스트 종료</button>
@@ -560,6 +562,8 @@
         let testWords = [];
         let testResults = [];
         let studentName = '';
+        let attemptCount = 0; // 현재 단어 시도 횟수
+        let maxAttempts = 3; // 최대 시도 횟수
 
         // 단어 데이터 (DAY01-20)
         const vocabData = {
@@ -797,6 +801,8 @@
                 return;
             }
 
+            attemptCount = 0; // 시도 횟수 초기화
+
             const word = testWords[currentWordIndex];
             document.getElementById('wordDisplay').textContent = word.word;
             document.getElementById('wordMeaning').textContent = word.meaning;
@@ -809,9 +815,12 @@
 
             document.getElementById('feedback').classList.add('hide');
             document.getElementById('transcriptDisplay').classList.add('hide');
+            document.getElementById('attemptCounter').classList.add('hide');
             document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('retryButton').style.display = 'none';
             document.getElementById('skipButton').style.display = 'inline-block';
             document.getElementById('micButton').disabled = false;
+            document.getElementById('micInstruction').textContent = '마이크 버튼을 눌러 단어를 발음하세요';
         }
 
         // 음성 인식 시작
@@ -830,6 +839,8 @@
 
         // 발음 처리
         function processRecognition(transcript) {
+            attemptCount++;
+            
             const currentWord = testWords[currentWordIndex];
             const correctWord = currentWord.word.toLowerCase();
             
@@ -845,37 +856,85 @@
             feedback.classList.remove('hide', 'correct', 'incorrect');
 
             if (isCorrect) {
+                // 정답인 경우
                 feedback.classList.add('correct');
                 feedback.innerHTML = `
                     <div style="font-size: 2em; margin-bottom: 10px;">✅ 정확합니다!</div>
                     <div>발음: ${transcript}</div>
+                    <div style="margin-top: 10px; color: #155724;">시도 횟수: ${attemptCount}회</div>
                 `;
                 testResults.push({
                     word: currentWord.word,
                     meaning: currentWord.meaning,
                     userInput: transcript,
+                    attempts: attemptCount,
                     correct: true
                 });
                 document.getElementById('correctCount').textContent = testResults.filter(r => r.correct).length;
+                
+                // 다음 단어 버튼만 표시
+                document.getElementById('nextButton').style.display = 'inline-block';
+                document.getElementById('retryButton').style.display = 'none';
+                document.getElementById('skipButton').style.display = 'none';
+                document.getElementById('micButton').disabled = true;
+                document.getElementById('attemptCounter').classList.add('hide');
+                
             } else {
+                // 오답인 경우
                 feedback.classList.add('incorrect');
-                feedback.innerHTML = `
-                    <div style="font-size: 2em; margin-bottom: 10px;">❌ 다시 시도해보세요</div>
-                    <div>인식된 발음: ${transcript}</div>
-                    <div>정답: ${correctWord}</div>
-                `;
-                testResults.push({
-                    word: currentWord.word,
-                    meaning: currentWord.meaning,
-                    userInput: transcript,
-                    correct: false
-                });
+                
+                if (attemptCount >= maxAttempts) {
+                    // 3번 실패한 경우
+                    feedback.innerHTML = `
+                        <div style="font-size: 2em; margin-bottom: 10px;">😢 3번 시도했습니다</div>
+                        <div>마지막 발음: ${transcript}</div>
+                        <div style="margin-top: 10px;">정답: <strong>${correctWord}</strong></div>
+                        <div style="margin-top: 10px; color: #721c24;">다음 단어로 넘어가세요</div>
+                    `;
+                    testResults.push({
+                        word: currentWord.word,
+                        meaning: currentWord.meaning,
+                        userInput: transcript,
+                        attempts: attemptCount,
+                        correct: false
+                    });
+                    
+                    // 다음 단어 버튼 표시, 다시 시도 버튼 숨김
+                    document.getElementById('nextButton').style.display = 'inline-block';
+                    document.getElementById('retryButton').style.display = 'none';
+                    document.getElementById('skipButton').style.display = 'none';
+                    document.getElementById('micButton').disabled = true;
+                    document.getElementById('attemptCounter').classList.add('hide');
+                    
+                } else {
+                    // 아직 시도 기회가 남은 경우
+                    feedback.innerHTML = `
+                        <div style="font-size: 2em; margin-bottom: 10px;">❌ 다시 시도해보세요</div>
+                        <div>인식된 발음: ${transcript}</div>
+                        <div>정답: <strong>${correctWord}</strong></div>
+                        <div style="margin-top: 10px; color: #721c24;">남은 기회: ${maxAttempts - attemptCount}번</div>
+                    `;
+                    
+                    // 시도 카운터 표시
+                    document.getElementById('attemptNum').textContent = attemptCount;
+                    document.getElementById('attemptCounter').classList.remove('hide');
+                    
+                    // 다시 시도 버튼 표시
+                    document.getElementById('retryButton').style.display = 'inline-block';
+                    document.getElementById('nextButton').style.display = 'none';
+                    document.getElementById('skipButton').style.display = 'none';
+                    document.getElementById('micButton').disabled = true;
+                }
             }
+        }
 
-            // 다음 단어 버튼 표시, 건너뛰기 버튼 숨김
-            document.getElementById('nextButton').style.display = 'inline-block';
-            document.getElementById('skipButton').style.display = 'none';
-            document.getElementById('micButton').disabled = true;
+        // 다시 시도
+        function retryWord() {
+            document.getElementById('feedback').classList.add('hide');
+            document.getElementById('transcriptDisplay').classList.add('hide');
+            document.getElementById('retryButton').style.display = 'none';
+            document.getElementById('micButton').disabled = false;
+            document.getElementById('micInstruction').textContent = `다시 발음해보세요 (${attemptCount}/${maxAttempts})`;
         }
 
         // 다음 단어로 이동
@@ -930,6 +989,7 @@
                 word: currentWord.word,
                 meaning: currentWord.meaning,
                 userInput: '(건너뜀)',
+                attempts: 0,
                 correct: false
             });
             currentWordIndex++;
@@ -963,11 +1023,12 @@
             testResults.forEach((result, index) => {
                 const resultItem = document.createElement('div');
                 resultItem.className = `result-item ${result.correct ? '' : 'incorrect'}`;
+                const attemptInfo = result.attempts > 0 ? ` (${result.attempts}번 시도)` : '';
                 resultItem.innerHTML = `
                     <div>
                         <strong>${index + 1}. ${result.word}</strong> - ${result.meaning}
                         <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
-                            발음: ${result.userInput}
+                            발음: ${result.userInput}${attemptInfo}
                         </div>
                     </div>
                     <div style="font-size: 1.5em;">
@@ -1001,9 +1062,9 @@
             const totalQuestions = testResults.length;
             const score = Math.round((correctAnswers / totalQuestions) * 100);
 
-            let csvContent = '번호,단어,뜻,발음,결과\n';
+            let csvContent = '번호,단어,뜻,발음,시도횟수,결과\n';
             testResults.forEach((result, index) => {
-                csvContent += `${index + 1},"${result.word}","${result.meaning}","${result.userInput}","${result.correct ? '정답' : '오답'}"\n`;
+                csvContent += `${index + 1},"${result.word}","${result.meaning}","${result.userInput}",${result.attempts || 0},"${result.correct ? '정답' : '오답'}"\n`;
             });
             csvContent += `\n총 단어 수,${totalQuestions}\n`;
             csvContent += `정답 수,${correctAnswers}\n`;
