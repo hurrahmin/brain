@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 단어 발음 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .mode-btn.student {
+            background: #667eea;
+            color: white;
+        }
+
+        .mode-btn.teacher {
+            background: #f093fb;
+            color: white;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .mode-btn.active {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .day-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .test-area {
+            text-align: center;
+        }
+
+        .word-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px;
+            border-radius: 20px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .word-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .word-meaning {
+            font-size: 1.5em;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            border: none;
+            font-size: 3em;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+            margin: 20px auto;
+            display: block;
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+        }
+
+        .mic-button.listening {
+            background: #51cf66;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .feedback {
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 10px;
+            font-size: 1.2em;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .accuracy-score {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .results-summary {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result-item.incorrect {
+            border-left-color: #ff6b6b;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        .teacher-dashboard {
+            margin-top: 30px;
+        }
+
+        .student-record {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .transcript-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 영어 단어 발음 테스트</h1>
+            <p class="subtitle">능률 VOCA 중등 고난도 - AI 발음 검사 시스템</p>
+        </div>
+
+        <div class="main-content">
+            <div class="mode-selector">
+                <button class="mode-btn student active" onclick="switchMode('student')">🎓 학생 모드</button>
+                <button class="mode-btn teacher" onclick="switchMode('teacher')">👨‍🏫 선생님 모드</button>
+            </div>
+
+            <!-- 학생 모드 -->
+            <div id="studentMode" class="section active">
+                <div id="setupScreen">
+                    <div class="form-group">
+                        <label>학생 이름</label>
+                        <input type="text" id="studentName" placeholder="이름을 입력하세요">
+                    </div>
+
+                    <div class="form-group">
+                        <label>테스트할 범위 선택</label>
+                        <div class="day-selector">
+                            <div>
+                                <label>시작 Day</label>
+                                <select id="startDay"></select>
+                            </div>
+                            <div>
+                                <label>종료 Day</label>
+                                <select id="endDay"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="startTest()">테스트 시작</button>
+                </div>
+
+                <div id="testScreen" class="section">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressBar">0%</div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="currentIndex">0</div>
+                            <div class="stat-label">현재 단어</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalWords">0</div>
+                            <div class="stat-label">전체 단어</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="correctCount">0</div>
+                            <div class="stat-label">맞춘 단어</div>
+                        </div>
+                    </div>
+
+                    <div class="test-area">
+                        <div class="word-card">
+                            <div class="word-display" id="wordDisplay">준비 중...</div>
+                            <div class="word-meaning" id="wordMeaning"></div>
+                        </div>
+
+                        <button class="mic-button" id="micButton" onclick="startListening()">🎤</button>
+                        <p style="color: #666; margin-top: 10px;">마이크 버튼을 눌러 단어를 발음하세요</p>
+
+                        <div id="transcriptDisplay" class="transcript-display hide">
+                            인식된 발음: <span id="transcript"></span>
+                        </div>
+
+                        <div id="feedback" class="feedback hide"></div>
+
+                        <div class="controls">
+                            <button onclick="skipWord()">⏭️ 건너뛰기</button>
+                            <button onclick="stopTest()">🛑 테스트 종료</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultScreen" class="section">
+                    <h2 style="text-align: center; margin-bottom: 30px;">테스트 결과</h2>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="finalCorrect">0</div>
+                            <div class="stat-label">정답</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="finalIncorrect">0</div>
+                            <div class="stat-label">오답</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="finalScore">0%</div>
+                            <div class="stat-label">정답률</div>
+                        </div>
+                    </div>
+
+                    <div class="results-summary" id="resultsList"></div>
+
+                    <div class="controls">
+                        <button onclick="downloadResults()">📥 결과 다운로드</button>
+                        <button onclick="resetTest()">🔄 새로 시작</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 선생님 모드 -->
+            <div id="teacherMode" class="section">
+                <h2>학생 테스트 기록</h2>
+                <div class="teacher-dashboard" id="teacherDashboard">
+                    <p style="text-align: center; color: #666; padding: 40px;">
+                        저장된 테스트 기록이 없습니다.
+                    </p>
+                </div>
+                <div class="controls">
+                    <button onclick="loadAllRecords()">🔄 기록 새로고침</button>
+                    <button onclick="clearAllRecords()">🗑️ 모든 기록 삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentMode = 'student';
+        let recognition;
+        let isListening = false;
+        let currentWordIndex = 0;
+        let testWords = [];
+        let testResults = [];
+        let studentName = '';
+
+        // 단어 데이터 (DAY01-20)
+        const vocabData = {
+            'DAY01': [
+                {word: 'jealous', meaning: '질투하는, 시기하는'},
+                {word: 'nearby', meaning: '인근의, 가까운 곳의'},
+                {word: 'overseas', meaning: '해외로, 해외에서'},
+                {word: 'inform', meaning: '알리다, 통지하다'},
+                {word: 'historical', meaning: '역사의, 역사적인'},
+                {word: 'screen', meaning: '화면, 스크린, 영화'},
+                {word: 'concept', meaning: '개념'},
+                {word: 'employ', meaning: '고용하다'},
+                {word: 'broad', meaning: '(폭이) 넓은, 폭넓은, 광범위한'},
+                {word: 'unusual', meaning: '보통이 아닌, 흔치 않은, 독특한'},
+                {word: 'remain', meaning: '여전히[계속] ...이다, 남다'},
+                {word: 'lecture', meaning: '강의, 강연'},
+                {word: 'league', meaning: '(스포츠 경기의) 리그, 연합, 연맹'},
+                {word: 'reality', meaning: '현실, 실제상황'},
+                {word: 'relief', meaning: '안도, 안심, (고통 등의) 경감, 완화'},
+                {word: 'eager', meaning: '간절히 바라는, 갈망하는'},
+                {word: 'state', meaning: '상태, 형편, (미국 등의) 주'},
+                {word: 'complex', meaning: '복잡한'},
+                {word: 'curve', meaning: '곡선, 커브'},
+                {word: 'criticize', meaning: '비난[비판]하다, 비평하다'},
+                {word: 'relationship', meaning: '관계, 관련'},
+                {word: 'stream', meaning: '시내, 시냇물, 흐름'},
+                {word: 'bandage', meaning: '붕대'},
+                {word: 'memorable', meaning: '기억할 만한, 인상적인'},
+                {word: 'treatment', meaning: '치료, 처치, 대우'},
+                {word: 'apply', meaning: '지원[신청]하다, 적용[해당]되다, 적용하다'},
+                {word: 'earn', meaning: '(돈을) 벌다'},
+            ],
+            'DAY02': [
+                {word: 'foresee', meaning: '예견하다, 예측하다'},
+                {word: 'grammar', meaning: '문법'},
+                {word: 'lend', meaning: '빌려주다'},
+                {word: 'passenger', meaning: '승객, 여객'},
+                {word: 'admire', meaning: '존경하다'},
+                {word: 'ashamed', meaning: '부끄러운, 수치스러운'},
+                {word: 'merry', meaning: '명랑한, 즐거운'},
+                {word: 'industry', meaning: '공업, 산업'},
+                {word: 'trend', meaning: '경향, 추세, 유행'},
+                {word: 'efficient', meaning: '효율적인, 유능한'},
+                {word: 'remind', meaning: '상기시키다, 생각나게 하다'},
+                {word: 'except', meaning: '...을 제외하고, ... 이외에는'},
+                {word: 'switch', meaning: '스위치, 변경, 전환'},
+                {word: 'eventually', meaning: '결국, 종내'},
+                {word: 'task', meaning: '직무, 과제'},
+                {word: 'limit', meaning: '한계, 제한'},
+                {word: 'maintain', meaning: '지속[계속]하다, 유지하다'},
+                {word: 'session', meaning: '(특정한 활동을 하는) 기간[시간]'},
+                {word: 'unbelievable', meaning: '믿기 어려운, 믿을 수 없는'},
+                {word: 'advantage', meaning: '유리한 점, 이점, 장점'},
+                {word: 'terribly', meaning: '매우, 몹시, 아주, 나쁘게, 지독하게'},
+                {word: 'desire', meaning: '욕구, 갈망'},
+                {word: 'uneasy', meaning: '불안한, 걱정되는, 불편한'},
+                {word: 'essence', meaning: '본질, 진수'},
+                {word: 'priceless', meaning: '값을 매길 수 없는, 매우 귀중한'},
+                {word: 'emergency', meaning: '비상사태, 비상시'},
+            ],
+            'DAY03': [
+                {word: 'anxiety', meaning: '걱정, 불안'},
+                {word: 'setting', meaning: '환경, 장소, (소설, 영화 등의) 배경, 무대'},
+                {word: 'imagination', meaning: '상상(력)'},
+                {word: 'therapy', meaning: '치료, 요법'},
+                {word: 'experiment', meaning: '실험'},
+                {word: 'snore', meaning: '코를 골다'},
+                {word: 'overall', meaning: '전체의, 전반적인'},
+                {word: 'hire', meaning: '고용하다'},
+                {word: 'regret', meaning: '후회하다'},
+                {word: 'anniversary', meaning: '기념일'},
+                {word: 'entertain', meaning: '즐겁게 하다'},
+                {word: 'absolute', meaning: '완벽한, 완전한, 절대적인, 무제한의'},
+                {word: 'aim', meaning: '목표로 하다, 겨누다'},
+                {word: 'sincere', meaning: '진실된, 진심 어린'},
+                {word: 'therefore', meaning: '그러므로, 그 결과'},
+                {word: 'audience', meaning: '청중, 관객'},
+                {word: 'valuable', meaning: '가치가 큰, 값비싼, 유익한, 소중한'},
+                {word: 'underwater', meaning: '물속의, 수중(용)의'},
+                {word: 'deserve', meaning: '...할[받을] 만하다, ...할 가치가 있다'},
+                {word: 'sneeze', meaning: '재채기하다'},
+                {word: 'realistic', meaning: '현실적인, 현실성 있는, 사실적인'},
+                {word: 'ideal', meaning: '이상적인, 완벽한'},
+                {word: 'furthermore', meaning: '더욱이, 게다가'},
+                {word: 'faith', meaning: '믿음, 신뢰'},
+                {word: 'suggest', meaning: '제안[추천]하다, 시사하다'},
+                {word: 'spark', meaning: '불꽃'},
+                {word: 'plenty', meaning: '많음, 충분'},
+            ]
+        };
+
+        // 초기화
+        function init() {
+            populateDaySelectors();
+            setupSpeechRecognition();
+            loadTeacherRecords();
+        }
+
+        // Day 선택 옵션 생성
+        function populateDaySelectors() {
+            const startSelect = document.getElementById('startDay');
+            const endSelect = document.getElementById('endDay');
+            
+            for (let i = 1; i <= 20; i++) {
+                const option1 = document.createElement('option');
+                option1.value = i;
+                option1.textContent = `Day ${i}`;
+                startSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = i;
+                option2.textContent = `Day ${i}`;
+                endSelect.appendChild(option2);
+            }
+
+            endSelect.value = 2; // 기본값: Day 1-2
+        }
+
+        // 음성 인식 설정
+        function setupSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript.toLowerCase().trim();
+                    processRecognition(transcript);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    document.getElementById('micButton').classList.remove('listening');
+                    isListening = false;
+                    
+                    if (event.error === 'not-allowed') {
+                        alert('⚠️ 마이크 권한이 필요합니다!\n\n해결 방법:\n\n1. 브라우저 주소창 왼쪽의 🔒 또는 ⓘ 아이콘을 클릭하세요\n2. "마이크" 권한을 "허용"으로 변경하세요\n3. 페이지를 새로고침하세요\n\n또는\n\n크롬 설정 > 개인정보 및 보안 > 사이트 설정 > 마이크에서 이 사이트를 허용 목록에 추가하세요.');
+                    } else if (event.error === 'no-speech') {
+                        alert('음성이 감지되지 않았습니다. 다시 시도해주세요.');
+                    } else {
+                        alert('음성 인식 오류가 발생했습니다: ' + event.error + '\n다시 시도해주세요.');
+                    }
+                };
+
+                recognition.onend = function() {
+                    document.getElementById('micButton').classList.remove('listening');
+                    isListening = false;
+                };
+            } else {
+                alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome 브라우저를 사용해주세요.');
+            }
+        }
+
+        // 모드 전환
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('studentMode').classList.toggle('active', mode === 'student');
+            document.getElementById('teacherMode').classList.toggle('active', mode === 'teacher');
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.mode-btn.${mode}`).classList.add('active');
+
+            if (mode === 'teacher') {
+                loadTeacherRecords();
+            }
+        }
+
+        // 테스트 시작
+        function startTest() {
+            studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                alert('학생 이름을 입력해주세요.');
+                return;
+            }
+
+            const startDay = parseInt(document.getElementById('startDay').value);
+            const endDay = parseInt(document.getElementById('endDay').value);
+
+            if (endDay < startDay) {
+                alert('종료 Day는 시작 Day보다 크거나 같아야 합니다.');
+                return;
+            }
+
+            if (endDay - startDay > 2) {
+                alert('최대 3일치까지만 선택할 수 있습니다.');
+                return;
+            }
+
+            // 선택된 Day의 단어들 수집
+            testWords = [];
+            for (let i = startDay; i <= endDay; i++) {
+                const dayKey = `DAY${String(i).padStart(2, '0')}`;
+                if (vocabData[dayKey]) {
+                    testWords = testWords.concat(vocabData[dayKey]);
+                }
+            }
+
+            if (testWords.length === 0) {
+                alert('선택한 범위의 단어 데이터가 없습니다.');
+                return;
+            }
+
+            // 단어 섞기
+            testWords = shuffleArray(testWords);
+            
+            currentWordIndex = 0;
+            testResults = [];
+
+            document.getElementById('setupScreen').classList.remove('active');
+            document.getElementById('testScreen').classList.add('active');
+            document.getElementById('totalWords').textContent = testWords.length;
+
+            showNextWord();
+        }
+
+        // 배열 섞기
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // 다음 단어 표시
+        function showNextWord() {
+            if (currentWordIndex >= testWords.length) {
+                finishTest();
+                return;
+            }
+
+            const word = testWords[currentWordIndex];
+            document.getElementById('wordDisplay').textContent = word.word;
+            document.getElementById('wordMeaning').textContent = word.meaning;
+            document.getElementById('currentIndex').textContent = currentWordIndex + 1;
+            
+            const progress = ((currentWordIndex) / testWords.length) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = Math.round(progress) + '%';
+
+            document.getElementById('feedback').classList.add('hide');
+            document.getElementById('transcriptDisplay').classList.add('hide');
+        }
+
+        // 음성 인식 시작
+        function startListening() {
+            if (!recognition) {
+                alert('음성 인식이 지원되지 않는 브라우저입니다.');
+                return;
+            }
+
+            if (isListening) return;
+
+            isListening = true;
+            document.getElementById('micButton').classList.add('listening');
+            recognition.start();
+        }
+
+        // 발음 처리
+        function processRecognition(transcript) {
+            const currentWord = testWords[currentWordIndex];
+            const correctWord = currentWord.word.toLowerCase();
+            
+            document.getElementById('transcript').textContent = transcript;
+            document.getElementById('transcriptDisplay').classList.remove('hide');
+
+            // 유사도 계산 (간단한 매칭)
+            const isCorrect = transcript === correctWord || 
+                             transcript.includes(correctWord) ||
+                             calculateSimilarity(transcript, correctWord) > 0.7;
+
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hide', 'correct', 'incorrect');
+
+            if (isCorrect) {
+                feedback.classList.add('correct');
+                feedback.innerHTML = `
+                    <div style="font-size: 2em; margin-bottom: 10px;">✅ 정확합니다!</div>
+                    <div>발음: ${transcript}</div>
+                `;
+                testResults.push({
+                    word: currentWord.word,
+                    meaning: currentWord.meaning,
+                    userInput: transcript,
+                    correct: true
+                });
+                document.getElementById('correctCount').textContent = testResults.filter(r => r.correct).length;
+            } else {
+                feedback.classList.add('incorrect');
+                feedback.innerHTML = `
+                    <div style="font-size: 2em; margin-bottom: 10px;">❌ 다시 시도해보세요</div>
+                    <div>인식된 발음: ${transcript}</div>
+                    <div>정답: ${correctWord}</div>
+                `;
+                testResults.push({
+                    word: currentWord.word,
+                    meaning: currentWord.meaning,
+                    userInput: transcript,
+                    correct: false
+                });
+            }
+
+            setTimeout(() => {
+                currentWordIndex++;
+                showNextWord();
+            }, 2000);
+        }
+
+        // 문자열 유사도 계산 (Levenshtein distance)
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const editDistance = getEditDistance(longer, shorter);
+            return (longer.length - editDistance) / longer.length;
+        }
+
+        function getEditDistance(str1, str2) {
+            const matrix = [];
+            
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            return matrix[str2.length][str1.length];
+        }
+
+        // 단어 건너뛰기
+        function skipWord() {
+            const currentWord = testWords[currentWordIndex];
+            testResults.push({
+                word: currentWord.word,
+                meaning: currentWord.meaning,
+                userInput: '(건너뜀)',
+                correct: false
+            });
+            currentWordIndex++;
+            showNextWord();
+        }
+
+        // 테스트 중단
+        function stopTest() {
+            if (confirm('테스트를 중단하시겠습니까?')) {
+                finishTest();
+            }
+        }
+
+        // 테스트 완료
+        function finishTest() {
+            document.getElementById('testScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+
+            const correctAnswers = testResults.filter(r => r.correct).length;
+            const totalQuestions = testResults.length;
+            const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+            document.getElementById('finalCorrect').textContent = correctAnswers;
+            document.getElementById('finalIncorrect').textContent = totalQuestions - correctAnswers;
+            document.getElementById('finalScore').textContent = score + '%';
+
+            // 결과 목록 생성
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '<h3 style="margin-bottom: 20px;">상세 결과</h3>';
+            
+            testResults.forEach((result, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${result.correct ? '' : 'incorrect'}`;
+                resultItem.innerHTML = `
+                    <div>
+                        <strong>${index + 1}. ${result.word}</strong> - ${result.meaning}
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                            발음: ${result.userInput}
+                        </div>
+                    </div>
+                    <div style="font-size: 1.5em;">
+                        ${result.correct ? '✅' : '❌'}
+                    </div>
+                `;
+                resultsList.appendChild(resultItem);
+            });
+
+            // 결과 저장
+            saveTestResult({
+                studentName: studentName,
+                date: new Date().toLocaleString('ko-KR'),
+                totalWords: totalQuestions,
+                correct: correctAnswers,
+                score: score,
+                details: testResults
+            });
+        }
+
+        // 결과 저장
+        function saveTestResult(result) {
+            let records = JSON.parse(localStorage.getItem('vocabTestRecords') || '[]');
+            records.push(result);
+            localStorage.setItem('vocabTestRecords', JSON.stringify(records));
+        }
+
+        // 결과 다운로드
+        function downloadResults() {
+            const correctAnswers = testResults.filter(r => r.correct).length;
+            const totalQuestions = testResults.length;
+            const score = Math.round((correctAnswers / totalQuestions) * 100);
+
+            let csvContent = '번호,단어,뜻,발음,결과\n';
+            testResults.forEach((result, index) => {
+                csvContent += `${index + 1},"${result.word}","${result.meaning}","${result.userInput}","${result.correct ? '정답' : '오답'}"\n`;
+            });
+            csvContent += `\n총 단어 수,${totalQuestions}\n`;
+            csvContent += `정답 수,${correctAnswers}\n`;
+            csvContent += `정답률,${score}%\n`;
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${studentName}_발음테스트_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // 테스트 초기화
+        function resetTest() {
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('setupScreen').classList.add('active');
+            document.getElementById('studentName').value = '';
+            document.getElementById('startDay').value = '1';
+            document.getElementById('endDay').value = '2';
+            currentWordIndex = 0;
+            testWords = [];
+            testResults = [];
+        }
+
+        // 선생님 기록 불러오기
+        function loadTeacherRecords() {
+            const records = JSON.parse(localStorage.getItem('vocabTestRecords') || '[]');
+            const dashboard = document.getElementById('teacherDashboard');
+
+            if (records.length === 0) {
+                dashboard.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">저장된 테스트 기록이 없습니다.</p>';
+                return;
+            }
+
+            dashboard.innerHTML = '';
+            records.reverse().forEach((record, index) => {
+                const recordDiv = document.createElement('div');
+                recordDiv.className = 'student-record';
+                recordDiv.innerHTML = `
+                    <h3>${record.studentName}</h3>
+                    <p style="color: #666; margin: 10px 0;">테스트 일시: ${record.date}</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">${record.totalWords}</div>
+                            <div style="color: #666; font-size: 0.9em;">총 단어</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #51cf66;">${record.correct}</div>
+                            <div style="color: #666; font-size: 0.9em;">정답</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #ff6b6b;">${record.totalWords - record.correct}</div>
+                            <div style="color: #666; font-size: 0.9em;">오답</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">${record.score}%</div>
+                            <div style="color: #666; font-size: 0.9em;">정답률</div>
+                        </div>
+                    </div>
+                    <details style="margin-top: 15px;">
+                        <summary style="cursor: pointer; color: #667eea; font-weight: bold;">상세 결과 보기</summary>
+                        <div style="margin-top: 15px;" id="details-${index}"></div>
+                    </details>
+                `;
+                dashboard.appendChild(recordDiv);
+
+                // 상세 결과 추가
+                const detailsDiv = recordDiv.querySelector(`#details-${index}`);
+                record.details.forEach((detail, idx) => {
+                    const detailItem = document.createElement('div');
+                    detailItem.style.cssText = 'padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 5px; display: flex; justify-content: space-between;';
+                    detailItem.innerHTML = `
+                        <div>
+                            <strong>${idx + 1}. ${detail.word}</strong> - ${detail.meaning}
+                            <div style="color: #666; font-size: 0.9em;">발음: ${detail.userInput}</div>
+                        </div>
+                        <div style="font-size: 1.2em;">${detail.correct ? '✅' : '❌'}</div>
+                    `;
+                    detailsDiv.appendChild(detailItem);
+                });
+            });
+        }
+
+        // 모든 기록 새로고침
+        function loadAllRecords() {
+            loadTeacherRecords();
+            alert('기록을 새로고침했습니다.');
+        }
+
+        // 모든 기록 삭제
+        function clearAllRecords() {
+            if (confirm('정말 모든 테스트 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                localStorage.removeItem('vocabTestRecords');
+                loadTeacherRecords();
+                alert('모든 기록이 삭제되었습니다.');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        window.onload = init;
+    </script>
+</body>
+</html>
+            
